@@ -1,12 +1,6 @@
-import {
-  DataProvider,
-  BaseRecord,
-  GetListParams,
-  GetListResponse,
-} from "@refinedev/core";
 export interface Subject {
   id: string;
-  code: string;
+  courseCode: string;
   name: string;
   department: string;
   description: string;
@@ -15,7 +9,7 @@ export interface Subject {
 export const mockSubjects: Subject[] = [
   {
     id: "1",
-    code: "CS101",
+    courseCode: "CS101",
     name: "Introduction to Computer Science",
     department: "Computer Science",
     description:
@@ -23,14 +17,14 @@ export const mockSubjects: Subject[] = [
   },
   {
     id: "2",
-    code: "MATH201",
+    courseCode: "MATH201",
     name: "Calculus II",
     department: "Mathematics",
     description: "Integral calculus, series, and multivariable functions.",
   },
   {
     id: "3",
-    code: "ENG150",
+    courseCode: "ENG150",
     name: "English Literature",
     department: "English",
     description:
@@ -38,46 +32,17 @@ export const mockSubjects: Subject[] = [
   },
   {
     id: "4",
-    code: "BIO110",
+    courseCode: "BIO110",
     name: "General Biology",
     department: "Biology",
     description: "Introduction to cellular biology, genetics, and ecology.",
   },
   {
     id: "5",
-    code: "HIST300",
+    courseCode: "HIST300",
     name: "World History",
     department: "History",
     description:
       "Comprehensive overview of global events from ancient to contemporary periods.",
   },
 ];
-export const dataProvider: DataProvider = {
-  getList: async <TData extends BaseRecord = BaseRecord>({
-    resource,
-  }: GetListParams): Promise<GetListResponse<TData>> => {
-    if (resource !== "subjects")
-      return {
-        data: [] as TData[],
-        total: 0,
-      };
-    return {
-      data: mockSubjects as unknown as TData[],
-      total: mockSubjects.length,
-    };
-  },
-  getOne: async () => {
-    throw new Error("Method not implemented.");
-  },
-  create: async () => {
-    throw new Error("Method not implemented.");
-  },
-  update: async () => {
-    throw new Error("Method not implemented.");
-  },
-  deleteOne: async () => {
-    throw new Error("Method not implemented.");
-  },
-
-  getApiUrl: () => "",
-};
