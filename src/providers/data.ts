@@ -1,83 +1,52 @@
-import {
-  DataProvider,
-  BaseRecord,
-  GetListParams,
-  GetListResponse,
-} from "@refinedev/core";
-export interface Subject {
-  id: string;
-  code: string;
-  name: string;
-  department: string;
-  description: string;
+import { BACKEND_BASE_URL } from "@/constants";
+import { ListResponse } from "@/types";
+import { createDataProvider, CreateDataProviderOptions } from "@refinedev/rest";
+if (!BACKEND_BASE_URL) {
+  throw new Error("BACKEND_BASE_URL is not defined in environment variables");
 }
+const options: CreateDataProviderOptions = {
+  getList: {
+    getEndpoint: ({ resource }) => resource,
+    buildQueryParams: async ({ resource, pagination, filters }) => {
+      const params: Record<string, string | number> = {};
 
-export const mockSubjects: Subject[] = [
-  {
-    id: "1",
-    code: "CS101",
-    name: "Introduction to Computer Science",
-    department: "Computer Science",
-    description:
-      "Fundamentals of programming, algorithms, and computer systems.",
-  },
-  {
-    id: "2",
-    code: "MATH201",
-    name: "Calculus II",
-    department: "Mathematics",
-    description: "Integral calculus, series, and multivariable functions.",
-  },
-  {
-    id: "3",
-    code: "ENG150",
-    name: "English Literature",
-    department: "English",
-    description:
-      "Survey of English literature from the Renaissance to modern times.",
-  },
-  {
-    id: "4",
-    code: "BIO110",
-    name: "General Biology",
-    department: "Biology",
-    description: "Introduction to cellular biology, genetics, and ecology.",
-  },
-  {
-    id: "5",
-    code: "HIST300",
-    name: "World History",
-    department: "History",
-    description:
-      "Comprehensive overview of global events from ancient to contemporary periods.",
-  },
-];
-export const dataProvider: DataProvider = {
-  getList: async <TData extends BaseRecord = BaseRecord>({
-    resource,
-  }: GetListParams): Promise<GetListResponse<TData>> => {
-    if (resource !== "subjects")
-      return {
-        data: [] as TData[],
-        total: 0,
-      };
-    return {
-      data: mockSubjects as unknown as TData[],
-      total: mockSubjects.length,
-    };
-  },
-  getOne: async () => {
-    throw new Error("Method not implemented.");
-  },
-  create: async () => {
-    throw new Error("Method not implemented.");
-  },
-  update: async () => {
-    throw new Error("Method not implemented.");
-  },
-  deleteOne: async () => {
-    throw new Error("Method not implemented.");
-  },
+      const page = pagination?.currentPage ?? 1;
+      const pageSize = pagination?.pageSize ?? 10;
 
-  getApiUrl: () => "",
+      params.page = page;
+      params.limit = pageSize;
+
+      filters?.forEach((filter) => {
+        const field = "field" in filter ? filter.field : "";
+        const value = String(filter.value);
+
+        if (resource === "subjects") {
+          if (field === "department") params.department = value;
+          if (field === "name" || field === "code") params.search = value;
+        }
+        if (resource === "departments") {
+          if (field === "name" || field === "code") params.search = value;
+        }
+        if (resource === "classes") {
+          if (field === "name") params.search = value;
+          if (field === "subject") params.subject = value;
+          if (field === "teacher") params.teacher = value;
+        }
+      });
+
+      return params;
+    },
+    mapResponse: async (response) => {
+      const payload: ListResponse = await response.clone().json();
+      return payload.data ?? [];
+    },
+    getTotalCount: async (response) => {
+      const payload: ListResponse = await response.clone().json();
+      return payload.pagination?.total ?? payload.data?.length ?? 0;
+    },
+  },
 };
+
+const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options);
+
+export { dataProvider };
