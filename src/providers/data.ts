@@ -73,7 +73,7 @@ const options: CreateDataProviderOptions = {
     buildBodyParams: async ({ variables }) => variables,
     mapResponse: async (response) => {
       const json: CreateResponse = await response.json();
-      return json.data ?? [];
+      return json.data ?? [[]]];
     },
   },
 };
